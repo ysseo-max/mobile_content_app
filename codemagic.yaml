@@ -14,10 +14,10 @@ workflows:
           printf "storePassword=$CM_KEYSTORE_PASSWORD\nkeyPassword=$CM_KEY_PASSWORD\nkeyAlias=$CM_KEY_ALIAS\nstoreFile=upload-keystore.jks\n" > $CM_BUILD_DIR/android/key.properties
       - name: Get Flutter packages
         script: flutter packages pub get
-      - name: Build APK
-        script: flutter build apk --release
+      - name: Build AAB
+        script: flutter build appbundle --release
     artifacts:
-      - build/app/outputs/flutter-apk/app-release.apk
+      - build/app/outputs/bundle/release/app-release.aab
     publishing:
       email:
         recipients:
