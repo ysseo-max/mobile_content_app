@@ -50,24 +50,10 @@ workflows:
           set -e
           openssl genrsa -out /tmp/cert_key.pem 2048
           export CERTIFICATE_PRIVATE_KEY=$(cat /tmp/cert_key.pem)
-          # List existing distribution certificates
-          echo "=== Listing existing certificates ==="
-          app-store-connect certificates list --type DISTRIBUTION --json > /tmp/certs.json || true
-          cat /tmp/certs.json || true
-          # Revoke all existing distribution certificates (unusable without original private keys)
-          python3 -c "
-          import json, subprocess, sys
-          try:
-              with open('/tmp/certs.json') as f:
-                  certs = json.load(f)
-              for cert in certs:
-                  serial = cert.get('serialNumber') or cert.get('id') or cert.get('serial_number', '')
-                  name = cert.get('name', cert.get('displayName', 'unknown'))
-                  print(f'Revoking certificate: {name} (serial: {serial})')
-                  subprocess.run(['app-store-connect', 'certificates', 'delete', serial], check=False)
-          except Exception as e:
-              print(f'Certificate cleanup: {e}')
-          "
+          # Persist CERTIFICATE_PRIVATE_KEY for subsequent steps
+          echo "CERTIFICATE_PRIVATE_KEY<<CERTEOF" >> $CM_ENV
+          cat /tmp/cert_key.pem >> $CM_ENV
+          echo "CERTEOF" >> $CM_ENV
           echo "=== Fetching signing files ==="
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
@@ -76,13 +62,10 @@ workflows:
         script: |
           keychain add-certificates
           xcode-project use-profiles
-      - name: Flutter build without codesign
-        script: flutter build ios --release --no-codesign
-      - name: Build IPA with xcode-project
+      - name: Build IPA
         script: |
-          xcode-project build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME"
+          flutter build ipa --release \
+            --export-options-plist=/Users/builder/export_options.plist
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
