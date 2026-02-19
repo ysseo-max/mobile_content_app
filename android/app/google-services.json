@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "924939408824",
+    "project_id": "rebeauty-photos",
+    "storage_bucket": "rebeauty-photos.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:924939408824:android:b1320f81bcaf932bac6b4d",
+        "android_client_info": {
+          "package_name": "com.mobilecontent.mobile_content"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBx5uh4lXsAA2TF1naZLG80FRGPNVSTQ0A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
