@@ -77,19 +77,22 @@ workflows:
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create
-      - name: Set up signing
+      - name: Set up keychain and signing
         script: |
+          keychain initialize
           keychain add-certificates
-          # Grant codesign access to keychain items
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" ~/Library/Keychains/codemagic.keychain || true
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" ~/Library/Keychains/codemagic.keychain-db || true
-          # List identities for debugging
-          security find-identity -v -p codesigning
           xcode-project use-profiles
-      - name: Build IPA
+          # Debug: show keychain and identities
+          security list-keychains
+          security find-identity -v -p codesigning
+      - name: Build iOS (no codesign)
+        script: flutter build ios --release --no-codesign
+      - name: Archive and export IPA
         script: |
-          flutter build ipa --release \
-            --export-options-plist=/Users/builder/export_options.plist
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME" \
+            --archive-flags="-destination 'generic/platform=iOS'"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
