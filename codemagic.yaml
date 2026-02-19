@@ -47,16 +47,28 @@ workflows:
           cd ios && pod install
       - name: Generate certificate key and fetch signing files
         script: |
+          set -e
           openssl genrsa -out /tmp/cert_key.pem 2048
           export CERTIFICATE_PRIVATE_KEY=$(cat /tmp/cert_key.pem)
-          # Revoke existing distribution certificates (we don't have their private keys)
-          CERT_IDS=$(app-store-connect certificates list --type DISTRIBUTION --print-id 2>/dev/null || true)
-          if [ -n "$CERT_IDS" ]; then
-            echo "$CERT_IDS" | while read -r cid; do
-              echo "Revoking certificate: $cid"
-              app-store-connect certificates delete "$cid" 2>/dev/null || true
-            done
-          fi
+          # List existing distribution certificates
+          echo "=== Listing existing certificates ==="
+          app-store-connect certificates list --type DISTRIBUTION --json > /tmp/certs.json || true
+          cat /tmp/certs.json || true
+          # Revoke all existing distribution certificates (unusable without original private keys)
+          python3 -c "
+          import json, subprocess, sys
+          try:
+              with open('/tmp/certs.json') as f:
+                  certs = json.load(f)
+              for cert in certs:
+                  serial = cert.get('serialNumber') or cert.get('id') or cert.get('serial_number', '')
+                  name = cert.get('name', cert.get('displayName', 'unknown'))
+                  print(f'Revoking certificate: {name} (serial: {serial})')
+                  subprocess.run(['app-store-connect', 'certificates', 'delete', serial], check=False)
+          except Exception as e:
+              print(f'Certificate cleanup: {e}')
+          "
+          echo "=== Fetching signing files ==="
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create
