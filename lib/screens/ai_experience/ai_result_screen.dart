@@ -1,37 +1,45 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import '../../models/experience_state.dart';
 import '../../widgets/gradient_button.dart';
 
 class AiResultScreen extends StatelessWidget {
   const AiResultScreen({super.key});
 
-  Future<File?> _downloadImage(String imageUrl) async {
-    try {
-      final file = await DefaultCacheManager().getSingleFile(imageUrl);
-      return file;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  Future<void> _saveImage(BuildContext context, String? imageUrl) async {
-    if (imageUrl == null) return;
+  Future<void> _saveImage(BuildContext context) async {
     final state = context.read<ExperienceState>();
     final l10n = state.l10n;
+    final bytes = state.generatedImageBytes;
+    if (bytes == null) return;
 
     try {
-      final file = await _downloadImage(imageUrl);
-      if (file != null && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${l10n.tr('saveImage')}: ${file.path}'),
-            backgroundColor: const Color(0xFF4ECDC4),
-          ),
+      if (!kIsWeb) {
+        final tempDir = await getTemporaryDirectory();
+        final file = File(
+          '${tempDir.path}/ai_image_${DateTime.now().millisecondsSinceEpoch}.jpg',
         );
+        await file.writeAsBytes(bytes);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${l10n.tr('saveImage')}: ${file.path}'),
+              backgroundColor: const Color(0xFF4ECDC4),
+            ),
+          );
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.tr('saveImage')),
+              backgroundColor: const Color(0xFF4ECDC4),
+            ),
+          );
+        }
       }
     } catch (e) {
       if (context.mounted) {
@@ -45,12 +53,17 @@ class AiResultScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _shareImage(BuildContext context, String? imageUrl) async {
-    if (imageUrl == null) return;
+  Future<void> _shareImage(BuildContext context) async {
+    final state = context.read<ExperienceState>();
+    final bytes = state.generatedImageBytes;
 
     try {
-      final file = await _downloadImage(imageUrl);
-      if (file != null) {
+      if (bytes != null && !kIsWeb) {
+        final tempDir = await getTemporaryDirectory();
+        final file = File(
+          '${tempDir.path}/ai_share_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        );
+        await file.writeAsBytes(bytes);
         await Share.shareXFiles(
           [XFile(file.path)],
           text: 'Check out my AI image!',
@@ -58,7 +71,6 @@ class AiResultScreen extends StatelessWidget {
         return;
       }
     } catch (_) {}
-    // Fallback to text share
     await Share.share('Check out my AI image!');
   }
 
@@ -107,22 +119,10 @@ class AiResultScreen extends StatelessWidget {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(24),
-                    child: state.generatedImageUrl != null
-                        ? Image.network(
-                            state.generatedImageUrl!,
+                    child: state.generatedImageBytes != null
+                        ? Image.memory(
+                            state.generatedImageBytes!,
                             fit: BoxFit.cover,
-                            loadingBuilder: (context, child, progress) {
-                              if (progress == null) return child;
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  value: progress.expectedTotalBytes != null
-                                      ? progress.cumulativeBytesLoaded /
-                                          progress.expectedTotalBytes!
-                                      : null,
-                                  color: const Color(0xFF6C63FF),
-                                ),
-                              );
-                            },
                             errorBuilder: (context, error, stackTrace) {
                               return _buildPlaceholder();
                             },
@@ -140,8 +140,7 @@ class AiResultScreen extends StatelessWidget {
                       icon: Icons.download_rounded,
                       label: l10n.tr('saveImage'),
                       color: const Color(0xFF4ECDC4),
-                      onTap: () =>
-                          _saveImage(context, state.generatedImageUrl),
+                      onTap: () => _saveImage(context),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -150,8 +149,7 @@ class AiResultScreen extends StatelessWidget {
                       icon: Icons.share_rounded,
                       label: l10n.tr('shareImage'),
                       color: const Color(0xFF6C63FF),
-                      onTap: () =>
-                          _shareImage(context, state.generatedImageUrl),
+                      onTap: () => _shareImage(context),
                     ),
                   ),
                 ],

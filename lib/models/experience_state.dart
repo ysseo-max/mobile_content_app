@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../services/coupon_service.dart';
 import '../services/firebase_service.dart';
 import '../services/analytics_service.dart';
+import 'background_item.dart';
 
 class ExperienceState extends ChangeNotifier {
   // Language
@@ -41,13 +42,23 @@ class ExperienceState extends ChangeNotifier {
   }
 
   // ===================== AI Experience State =====================
-  // Steps: 0=intro, 1=photo, 2=birthYear, 3=gender, 4=generating,
-  //        5=result, 6=premiumIntro, 7=payment, 8=coupon, 9=ledWaiting, 10=ledComplete
+  // Steps: 0=intro, 1=backgroundSelect, 2=photo, 3=birthYear, 4=gender,
+  //        5=generating, 6=result, 7=premiumIntro, 8=payment, 9=coupon,
+  //        10=ledWaiting, 11=ledComplete
   int _aiStep = 0;
   int get aiStep => _aiStep;
 
+  BackgroundItem? _selectedBackground;
+  BackgroundItem? get selectedBackground => _selectedBackground;
+
+  Uint8List? _customBackgroundBytes;
+  Uint8List? get customBackgroundBytes => _customBackgroundBytes;
+
   File? _selectedPhoto;
   File? get selectedPhoto => _selectedPhoto;
+
+  Uint8List? _selectedPhotoBytes;
+  Uint8List? get selectedPhotoBytes => _selectedPhotoBytes;
 
   String _birthYear = '';
   String get birthYear => _birthYear;
@@ -57,6 +68,12 @@ class ExperienceState extends ChangeNotifier {
 
   String? _generatedImageUrl;
   String? get generatedImageUrl => _generatedImageUrl;
+
+  Uint8List? _generatedImageBytes;
+  Uint8List? get generatedImageBytes => _generatedImageBytes;
+
+  String? _generatedImagePath;
+  String? get generatedImagePath => _generatedImagePath;
 
   bool _isPremiumFlow = false;
   bool get isPremiumFlow => _isPremiumFlow;
@@ -72,8 +89,23 @@ class ExperienceState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setSelectedBackground(BackgroundItem? bg) {
+    _selectedBackground = bg;
+    notifyListeners();
+  }
+
+  void setCustomBackgroundBytes(Uint8List? bytes) {
+    _customBackgroundBytes = bytes;
+    notifyListeners();
+  }
+
   void setPhoto(File? photo) {
     _selectedPhoto = photo;
+    notifyListeners();
+  }
+
+  void setPhotoBytes(Uint8List? bytes) {
+    _selectedPhotoBytes = bytes;
     notifyListeners();
   }
 
@@ -91,9 +123,18 @@ class ExperienceState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setGeneratedImageBytes(Uint8List? bytes) {
+    _generatedImageBytes = bytes;
+    notifyListeners();
+  }
+
+  void setGeneratedImagePath(String? path) {
+    _generatedImagePath = path;
+  }
+
   void startPremiumFlow() {
     _isPremiumFlow = true;
-    _aiStep = 6;
+    _aiStep = 7;
     try { AnalyticsService.logPremiumStarted(); } catch (_) {}
     notifyListeners();
   }
@@ -106,7 +147,7 @@ class ExperienceState extends ChangeNotifier {
     if (CouponService.validateCoupon(_couponCode)) {
       _couponApplied = true;
       CouponService.useCoupon(_couponCode);
-      _aiStep = 9;
+      _aiStep = 10;
       notifyListeners();
     }
   }
@@ -117,10 +158,15 @@ class ExperienceState extends ChangeNotifier {
 
   void resetAiExperience() {
     _aiStep = 0;
+    _selectedBackground = null;
+    _customBackgroundBytes = null;
     _selectedPhoto = null;
+    _selectedPhotoBytes = null;
     _birthYear = '';
     _gender = '';
     _generatedImageUrl = null;
+    _generatedImageBytes = null;
+    _generatedImagePath = null;
     _isPremiumFlow = false;
     _couponCode = '';
     _couponApplied = false;

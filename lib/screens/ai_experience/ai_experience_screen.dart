@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/experience_state.dart';
 import 'ai_intro_screen.dart';
+import 'background_select_screen.dart';
 import 'photo_upload_screen.dart';
 import 'birth_year_screen.dart';
 import 'gender_screen.dart';
@@ -54,24 +55,26 @@ class AiExperienceScreen extends StatelessWidget {
       case 0:
         return const AiIntroScreen(key: ValueKey('ai_intro'));
       case 1:
-        return const PhotoUploadScreen(key: ValueKey('photo_upload'));
+        return const BackgroundSelectScreen(key: ValueKey('background_select'));
       case 2:
-        return const BirthYearScreen(key: ValueKey('birth_year'));
+        return const PhotoUploadScreen(key: ValueKey('photo_upload'));
       case 3:
-        return const GenderScreen(key: ValueKey('gender'));
+        return const BirthYearScreen(key: ValueKey('birth_year'));
       case 4:
-        return const AiGeneratingScreen(key: ValueKey('generating'));
+        return const GenderScreen(key: ValueKey('gender'));
       case 5:
-        return const AiResultScreen(key: ValueKey('result'));
+        return const AiGeneratingScreen(key: ValueKey('generating'));
       case 6:
-        return const PremiumIntroScreen(key: ValueKey('premium_intro'));
+        return const AiResultScreen(key: ValueKey('result'));
       case 7:
-        return const PaymentScreen(key: ValueKey('payment'));
+        return const PremiumIntroScreen(key: ValueKey('premium_intro'));
       case 8:
-        return const CouponInputScreen(key: ValueKey('coupon_input'));
+        return const PaymentScreen(key: ValueKey('payment'));
       case 9:
-        return const LedWaitingScreen(key: ValueKey('led_waiting'));
+        return const CouponInputScreen(key: ValueKey('coupon_input'));
       case 10:
+        return const LedWaitingScreen(key: ValueKey('led_waiting'));
+      case 11:
         return const LedCompleteScreen(key: ValueKey('led_complete'));
       default:
         return const AiIntroScreen(key: ValueKey('ai_intro_default'));
@@ -79,10 +82,10 @@ class AiExperienceScreen extends StatelessWidget {
   }
 
   void _handleBack(ExperienceState state) {
-    if (state.aiStep == 6) {
-      state.setAiStep(5);
-    } else if (state.aiStep == 8) {
-      state.setAiStep(7);
+    if (state.aiStep == 7) {
+      state.setAiStep(6);
+    } else if (state.aiStep == 9) {
+      state.setAiStep(8);
     } else if (state.aiStep > 0) {
       state.setAiStep(state.aiStep - 1);
     }

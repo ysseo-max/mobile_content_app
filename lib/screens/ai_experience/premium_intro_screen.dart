@@ -23,7 +23,7 @@ class PremiumIntroScreen extends StatelessWidget {
               Row(
                 children: [
                   IconButton(
-                    onPressed: () => state.setAiStep(5),
+                    onPressed: () => state.setAiStep(6),
                     icon: const Icon(Icons.arrow_back_ios_new_rounded,
                         color: Colors.white),
                   ),
@@ -90,7 +90,7 @@ class PremiumIntroScreen extends StatelessWidget {
                 text: l10n.tr('next'),
                 icon: Icons.arrow_forward_rounded,
                 colors: const [Color(0xFFFFD700), Color(0xFFFF8C00)],
-                onPressed: () => state.setAiStep(7),
+                onPressed: () => state.setAiStep(8),
               ),
               const SizedBox(height: 32),
             ],

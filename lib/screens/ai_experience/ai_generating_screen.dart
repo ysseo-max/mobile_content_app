@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/experience_state.dart';
 import '../../services/ai_image_service.dart';
+import '../../services/gemini_service.dart';
 
 class AiGeneratingScreen extends StatefulWidget {
   const AiGeneratingScreen({super.key});
@@ -39,7 +40,7 @@ class _AiGeneratingScreenState extends State<AiGeneratingScreen>
 
     final state = context.read<ExperienceState>();
 
-    if (state.selectedPhoto == null) {
+    if (state.selectedPhotoBytes == null || state.selectedBackground == null) {
       if (mounted) {
         setState(() {
           _hasFailed = true;
@@ -50,21 +51,34 @@ class _AiGeneratingScreenState extends State<AiGeneratingScreen>
     }
 
     try {
-      final imageUrl = await AiImageService.generateImage(
-        photo: state.selectedPhoto!,
+      final result = await AiImageService.generateImage(
+        backgroundUrl: state.selectedBackground!.url,
+        photoBytes: state.selectedPhotoBytes!,
         birthYear: state.birthYear,
         gender: state.gender,
+        customBackgroundBytes: state.selectedBackground!.isCustom
+            ? state.customBackgroundBytes
+            : null,
       );
 
       if (mounted) {
-        state.setGeneratedImage(imageUrl);
-        state.setAiStep(5);
+        state.setGeneratedImageBytes(result.imageBytes);
+        state.setGeneratedImagePath(result.filePath);
+        state.setGeneratedImage(result.filePath ?? 'gemini-generated');
+        state.setAiStep(6);
+      }
+    } on GeminiSafetyException {
+      if (mounted) {
+        setState(() {
+          _hasFailed = true;
+          _errorMessage = state.l10n.tr('contentFiltered');
+        });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _hasFailed = true;
-          _errorMessage = state.l10n.tr('error');
+          _errorMessage = '${state.l10n.tr('error')}\n\n($e)';
         });
       }
     }
@@ -117,7 +131,7 @@ class _AiGeneratingScreenState extends State<AiGeneratingScreen>
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () => state.setAiStep(3),
+                        onPressed: () => state.setAiStep(4),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.white,
                           side: const BorderSide(color: Colors.white38),

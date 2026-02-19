@@ -19,10 +19,10 @@ class GenderScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded,
               color: Color(0xFF1A1D3E)),
-          onPressed: () => state.setAiStep(2),
+          onPressed: () => state.setAiStep(3),
         ),
         title: Text(
-          '3/3',
+          '4/4',
           style: TextStyle(
             color: Colors.grey.shade500,
             fontSize: 14,
@@ -76,7 +76,7 @@ class GenderScreen extends StatelessWidget {
                 text: l10n.tr('next'),
                 icon: Icons.auto_awesome,
                 onPressed: state.gender.isNotEmpty
-                    ? () => state.setAiStep(4)
+                    ? () => state.setAiStep(5)
                     : () {},
                 colors: state.gender.isNotEmpty
                     ? null

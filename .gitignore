@@ -50,3 +50,7 @@ service-account*.json
 
 # Flutter plugin registrant
 .flutter-plugins
+
+# Android signing
+android/key.properties
+*.jks

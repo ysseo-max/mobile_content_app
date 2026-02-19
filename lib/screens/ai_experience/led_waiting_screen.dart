@@ -69,7 +69,7 @@ class _LedWaitingScreenState extends State<LedWaitingScreen>
             _isChecking = false;
           });
           await Future.delayed(const Duration(seconds: 2));
-          if (mounted) state.setAiStep(10);
+          if (mounted) state.setAiStep(11);
         } else {
           setState(() {
             _isChecking = false;
@@ -135,7 +135,7 @@ class _LedWaitingScreenState extends State<LedWaitingScreen>
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () => state.setAiStep(5),
+                        onPressed: () => state.setAiStep(6),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(

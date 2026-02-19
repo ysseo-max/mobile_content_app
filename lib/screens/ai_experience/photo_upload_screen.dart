@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -18,7 +19,12 @@ class PhotoUploadScreen extends StatelessWidget {
     );
 
     if (pickedFile != null && context.mounted) {
-      context.read<ExperienceState>().setPhoto(File(pickedFile.path));
+      final state = context.read<ExperienceState>();
+      final bytes = await pickedFile.readAsBytes();
+      state.setPhotoBytes(bytes);
+      if (!kIsWeb) {
+        state.setPhoto(File(pickedFile.path));
+      }
     }
   }
 
@@ -26,6 +32,7 @@ class PhotoUploadScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<ExperienceState>();
     final l10n = state.l10n;
+    final hasPhoto = state.selectedPhotoBytes != null;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
@@ -35,10 +42,10 @@ class PhotoUploadScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded,
               color: Color(0xFF1A1D3E)),
-          onPressed: () => state.setAiStep(0),
+          onPressed: () => state.setAiStep(1),
         ),
         title: Text(
-          '1/3',
+          '2/4',
           style: TextStyle(
             color: Colors.grey.shade500,
             fontSize: 14,
@@ -65,10 +72,13 @@ class PhotoUploadScreen extends StatelessWidget {
               const SizedBox(height: 32),
               // Photo preview or upload area
               Expanded(
-                child: state.selectedPhoto != null
+                child: hasPhoto
                     ? _PhotoPreview(
-                        photo: state.selectedPhoto!,
-                        onRemove: () => state.setPhoto(null),
+                        photoBytes: state.selectedPhotoBytes!,
+                        onRemove: () {
+                          state.setPhotoBytes(null);
+                          state.setPhoto(null);
+                        },
                       )
                     : _PhotoUploadArea(
                         onCamera: () =>
@@ -79,11 +89,11 @@ class PhotoUploadScreen extends StatelessWidget {
                       ),
               ),
               const SizedBox(height: 24),
-              if (state.selectedPhoto != null)
+              if (hasPhoto)
                 GradientButton(
                   text: l10n.tr('next'),
                   icon: Icons.arrow_forward_rounded,
-                  onPressed: () => state.setAiStep(2),
+                  onPressed: () => state.setAiStep(3),
                 ),
               const SizedBox(height: 24),
             ],
@@ -95,10 +105,10 @@ class PhotoUploadScreen extends StatelessWidget {
 }
 
 class _PhotoPreview extends StatelessWidget {
-  final File photo;
+  final Uint8List photoBytes;
   final VoidCallback onRemove;
 
-  const _PhotoPreview({required this.photo, required this.onRemove});
+  const _PhotoPreview({required this.photoBytes, required this.onRemove});
 
   @override
   Widget build(BuildContext context) {
@@ -107,8 +117,8 @@ class _PhotoPreview extends StatelessWidget {
         Center(
           child: ClipRRect(
             borderRadius: BorderRadius.circular(24),
-            child: Image.file(
-              photo,
+            child: Image.memory(
+              photoBytes,
               fit: BoxFit.cover,
               width: double.infinity,
             ),

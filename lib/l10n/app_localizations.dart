@@ -43,6 +43,32 @@ class AppLocalizations {
       'zh': '请选择体验',
     },
 
+    // ===================== AI EXPERIENCE - Background Selection =====================
+    'selectBackground': {
+      'ko': '배경을 선택해 주세요',
+      'en': 'Select a background',
+      'ja': '背景を選択してください',
+      'zh': '请选择背景',
+    },
+    'selectBackgroundDesc': {
+      'ko': '서울 명소를 배경으로 선택하거나, 내 사진을 업로드하세요',
+      'en': 'Choose a Seoul landmark or upload your own photo',
+      'ja': 'ソウルの名所を選ぶか、自分の写真をアップロードしてください',
+      'zh': '选择首尔景点或上传您自己的照片',
+    },
+    'backgroundSelection': {
+      'ko': '배경',
+      'en': 'Background',
+      'ja': '背景',
+      'zh': '背景',
+    },
+    'contentFiltered': {
+      'ko': '안전 필터에 의해 콘텐츠가 차단되었습니다. 다른 사진을 시도해 주세요.',
+      'en': 'Content was filtered by safety settings. Please try a different photo.',
+      'ja': '安全フィルターによりコンテンツがブロックされました。別の写真をお試しください。',
+      'zh': '内容被安全过滤器拦截。请尝试使用其他照片。',
+    },
+
     // ===================== AI EXPERIENCE =====================
     'aiIntroTitle': {
       'ko': 'AI 이미지 체험',

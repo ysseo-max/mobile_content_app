@@ -32,7 +32,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               backgroundColor: const Color(0xFF4ECDC4),
             ),
           );
-          state.setAiStep(9);
+          state.setAiStep(10);
         }
       }
     } catch (e) {
@@ -61,7 +61,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded,
               color: Color(0xFF1A1D3E)),
-          onPressed: _isProcessing ? null : () => state.setAiStep(6),
+          onPressed: _isProcessing ? null : () => state.setAiStep(7),
         ),
         title: Text(
           l10n.tr('paymentMethod'),
@@ -143,7 +143,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 subtitle: l10n.tr('freeExperience'),
                 color: const Color(0xFF4ECDC4),
                 isDisabled: _isProcessing,
-                onTap: () => state.setAiStep(8),
+                onTap: () => state.setAiStep(9),
               ),
               if (_isProcessing) ...[
                 const SizedBox(height: 32),

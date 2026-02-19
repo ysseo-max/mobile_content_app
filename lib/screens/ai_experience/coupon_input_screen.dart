@@ -39,7 +39,7 @@ class _CouponInputScreenState extends State<CouponInputScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded,
               color: Color(0xFF1A1D3E)),
-          onPressed: () => state.setAiStep(7),
+          onPressed: () => state.setAiStep(8),
         ),
       ),
       body: SafeArea(

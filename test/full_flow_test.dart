@@ -90,7 +90,7 @@ void main() {
       expect(find.byIcon(Icons.camera_alt_outlined), findsOneWidget);
     });
 
-    testWidgets('AI intro start button navigates to photo upload',
+    testWidgets('AI intro start button navigates to background select',
         (tester) async {
       final state = ExperienceState();
       await tester
@@ -109,7 +109,7 @@ void main() {
     testWidgets('Photo upload screen shows camera and gallery options',
         (tester) async {
       final state = ExperienceState();
-      state.setAiStep(1);
+      state.setAiStep(2);
       await tester
           .pumpWidget(wrapWithProvider(const PhotoUploadScreen(), state: state));
       await tester.pumpAndSettle();
@@ -120,7 +120,7 @@ void main() {
 
     testWidgets('Birth year screen validates input', (tester) async {
       final state = ExperienceState();
-      state.setAiStep(2);
+      state.setAiStep(3);
       await tester
           .pumpWidget(wrapWithProvider(const BirthYearScreen(), state: state));
       await tester.pumpAndSettle();
@@ -138,12 +138,12 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(state.birthYear, '1990');
-      expect(state.aiStep, 3);
+      expect(state.aiStep, 4);
     });
 
     testWidgets('Birth year rejects invalid years', (tester) async {
       final state = ExperienceState();
-      state.setAiStep(2);
+      state.setAiStep(3);
       await tester
           .pumpWidget(wrapWithProvider(const BirthYearScreen(), state: state));
       await tester.pumpAndSettle();
@@ -157,12 +157,12 @@ void main() {
       await tester.pumpAndSettle();
 
       // Should not advance (1900 < 1920)
-      expect(state.aiStep, 2);
+      expect(state.aiStep, 3);
     });
 
     testWidgets('Gender screen allows selection', (tester) async {
       final state = ExperienceState();
-      state.setAiStep(3);
+      state.setAiStep(4);
       await tester
           .pumpWidget(wrapWithProvider(const GenderScreen(), state: state));
       await tester.pumpAndSettle();
@@ -185,8 +185,8 @@ void main() {
 
     testWidgets('AI result screen shows action buttons', (tester) async {
       final state = ExperienceState();
-      state.setAiStep(5);
-      state.setGeneratedImage('https://picsum.photos/400/600');
+      state.setAiStep(6);
+      state.setGeneratedImage('gemini-generated');
       await tester
           .pumpWidget(wrapWithProvider(const AiResultScreen(), state: state));
       await tester.pumpAndSettle();
@@ -198,8 +198,8 @@ void main() {
 
     testWidgets('Premium intro navigates to payment', (tester) async {
       final state = ExperienceState();
-      state.setAiStep(6);
-      state.setGeneratedImage('https://picsum.photos/400/600');
+      state.setAiStep(7);
+      state.setGeneratedImage('gemini-generated');
       await tester.pumpWidget(
           wrapWithProvider(const PremiumIntroScreen(), state: state));
       await tester.pumpAndSettle();
@@ -209,12 +209,12 @@ void main() {
       final nextBtn = find.byType(ElevatedButton);
       await tester.tap(nextBtn);
       await tester.pumpAndSettle();
-      expect(state.aiStep, 7);
+      expect(state.aiStep, 8);
     });
 
     testWidgets('Payment screen shows price and two options', (tester) async {
       final state = ExperienceState();
-      state.setAiStep(7);
+      state.setAiStep(8);
       await tester
           .pumpWidget(wrapWithProvider(const PaymentScreen(), state: state));
       await tester.pumpAndSettle();
@@ -229,7 +229,7 @@ void main() {
     testWidgets('Payment coupon option navigates to coupon input',
         (tester) async {
       final state = ExperienceState();
-      state.setAiStep(7);
+      state.setAiStep(8);
       await tester
           .pumpWidget(wrapWithProvider(const PaymentScreen(), state: state));
       await tester.pumpAndSettle();
@@ -239,12 +239,12 @@ void main() {
       await tester.tap(couponOption);
       await tester.pumpAndSettle();
 
-      expect(state.aiStep, 8);
+      expect(state.aiStep, 9);
     });
 
     testWidgets('Coupon input screen validates coupon', (tester) async {
       final state = ExperienceState();
-      state.setAiStep(8);
+      state.setAiStep(9);
       await tester
           .pumpWidget(wrapWithProvider(const CouponInputScreen(), state: state));
       await tester.pumpAndSettle();
@@ -260,13 +260,13 @@ void main() {
       await tester.tap(applyBtn);
       await tester.pumpAndSettle();
 
-      // Should stay on step 8 (invalid coupon)
-      expect(state.aiStep, 8);
+      // Should stay on step 9 (invalid coupon)
+      expect(state.aiStep, 9);
     });
 
     testWidgets('LED complete screen shows success', (tester) async {
       final state = ExperienceState();
-      state.setAiStep(10);
+      state.setAiStep(11);
       await tester.pumpWidget(
           wrapWithProvider(const LedCompleteScreen(), state: state));
       await tester.pumpAndSettle();
@@ -398,9 +398,12 @@ void main() {
       expect(state.currentTab, 0);
       expect(state.aiStep, 0);
       expect(state.selectedPhoto, null);
+      expect(state.selectedBackground, null);
+      expect(state.selectedPhotoBytes, null);
       expect(state.birthYear, '');
       expect(state.gender, '');
       expect(state.generatedImageUrl, null);
+      expect(state.generatedImageBytes, null);
       expect(state.stampStep, 0);
       expect(state.stamps, [false, false, false]);
       expect(state.allStampsCollected, false);
@@ -425,20 +428,20 @@ void main() {
       final state = ExperienceState();
       state.setAiStep(1);
       expect(state.aiStep, 1);
-      state.setAiStep(5);
-      expect(state.aiStep, 5);
+      state.setAiStep(6);
+      expect(state.aiStep, 6);
     });
 
-    test('AI flow: startPremiumFlow sets step 6', () {
+    test('AI flow: startPremiumFlow sets step 7', () {
       final state = ExperienceState();
       state.startPremiumFlow();
-      expect(state.aiStep, 6);
+      expect(state.aiStep, 7);
       expect(state.isPremiumFlow, true);
     });
 
     test('AI flow: resetAiExperience clears all', () {
       final state = ExperienceState();
-      state.setAiStep(5);
+      state.setAiStep(6);
       state.setGender('male');
       state.setBirthYear('1990');
       state.setGeneratedImage('url');
@@ -447,6 +450,9 @@ void main() {
       expect(state.gender, '');
       expect(state.birthYear, '');
       expect(state.generatedImageUrl, null);
+      expect(state.selectedBackground, null);
+      expect(state.selectedPhotoBytes, null);
+      expect(state.generatedImageBytes, null);
     });
 
     test('Stamp: confirmStamp marks correct location', () {
@@ -538,13 +544,13 @@ void main() {
 
       // Use in AI experience
       final aiState = ExperienceState();
-      aiState.setAiStep(8);
+      aiState.setAiStep(9);
       aiState.setAiCouponCode(couponCode);
       expect(aiState.validateCoupon(), true);
 
       aiState.applyCoupon();
       expect(aiState.couponApplied, true);
-      expect(aiState.aiStep, 9); // Goes to LED waiting
+      expect(aiState.aiStep, 10); // Goes to LED waiting
     });
   });
 
@@ -583,6 +589,13 @@ void main() {
     test('Unknown key returns key itself', () {
       final l10n = AppLocalizations.of('en');
       expect(l10n.tr('nonExistentKey'), 'nonExistentKey');
+    });
+
+    test('Background selection translations exist', () {
+      final l10n = AppLocalizations.of('en');
+      expect(l10n.tr('selectBackground'), contains('background'));
+      expect(l10n.tr('backgroundSelection'), 'Background');
+      expect(l10n.tr('contentFiltered'), contains('filtered'));
     });
   });
 

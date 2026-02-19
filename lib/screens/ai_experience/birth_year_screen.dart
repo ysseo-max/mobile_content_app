@@ -48,10 +48,10 @@ class _BirthYearScreenState extends State<BirthYearScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded,
               color: Color(0xFF1A1D3E)),
-          onPressed: () => state.setAiStep(1),
+          onPressed: () => state.setAiStep(2),
         ),
         title: Text(
-          '2/3',
+          '3/4',
           style: TextStyle(
             color: Colors.grey.shade500,
             fontSize: 14,
@@ -137,7 +137,7 @@ class _BirthYearScreenState extends State<BirthYearScreen> {
                 onPressed: _isValid
                     ? () {
                         state.setBirthYear(_controller.text);
-                        state.setAiStep(3);
+                        state.setAiStep(4);
                       }
                     : () {},
                 colors: _isValid

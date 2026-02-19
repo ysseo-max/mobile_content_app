@@ -1,0 +1,59 @@
+workflows:
+  android-workflow:
+    name: Android Release Build
+    max_build_duration: 30
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      groups:
+        - android_credentials
+      vars:
+        CM_KEY_ALIAS: upload
+    scripts:
+      - name: Get Flutter packages
+        script: flutter packages pub get
+      - name: Build APK
+        script: flutter build apk --release
+    artifacts:
+      - build/app/outputs/flutter-apk/app-release.apk
+    publishing:
+      email:
+        recipients:
+          - ysseo.max@gmail.com
+        notify:
+          success: true
+          failure: true
+
+  ios-workflow:
+    name: iOS Release Build
+    max_build_duration: 30
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: Codemagic
+    environment:
+      flutter: stable
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.mobilecontent.mobileContent
+      vars:
+        XCODE_WORKSPACE: ios/Runner.xcworkspace
+        XCODE_SCHEME: Runner
+    scripts:
+      - name: Get Flutter packages
+        script: flutter packages pub get
+      - name: Install CocoaPods
+        script: |
+          cd ios && pod install
+      - name: Set up code signing
+        script: xcode-project use-profiles
+      - name: Build IPA
+        script: flutter build ipa --release --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      email:
+        recipients:
+          - ysseo.max@gmail.com
+        notify:
+          success: true
+          failure: true

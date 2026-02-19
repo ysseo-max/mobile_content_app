@@ -10,6 +10,7 @@ import 'screens/main_shell.dart';
 import 'services/push_notification_service.dart';
 import 'services/firebase_service.dart';
 import 'services/analytics_service.dart';
+import 'services/gemini_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +34,9 @@ void main() async {
   } catch (e) {
     debugPrint('Push init failed: $e');
   }
+
+  // Gemini API 키 설정 (Firebase 프로젝트 웹 API 키 사용)
+  GeminiService.setApiKey('AIzaSyCirM8DyWukTsgyAQcQJj2oIhBQiYeBu-Q');
 
   // 익명 인증
   try {

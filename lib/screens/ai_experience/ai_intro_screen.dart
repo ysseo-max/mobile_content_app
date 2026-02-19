@@ -70,21 +70,27 @@ class AiIntroScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _StepIndicator(
+                    icon: Icons.image_outlined,
+                    label: l10n.tr('backgroundSelection'),
+                    number: '1',
+                  ),
+                  _StepDivider(),
+                  _StepIndicator(
                     icon: Icons.camera_alt_outlined,
                     label: l10n.tr('takePhoto'),
-                    number: '1',
+                    number: '2',
                   ),
                   _StepDivider(),
                   _StepIndicator(
                     icon: Icons.edit_outlined,
                     label: l10n.tr('birthYearHint'),
-                    number: '2',
+                    number: '3',
                   ),
                   _StepDivider(),
                   _StepIndicator(
                     icon: Icons.auto_awesome,
                     label: 'AI',
-                    number: '3',
+                    number: '4',
                   ),
                 ],
               ),
