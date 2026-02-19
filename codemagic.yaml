@@ -43,7 +43,7 @@ workflows:
         script: flutter packages pub get
       - name: Install CocoaPods
         script: |
-          cd $CM_BUILD_DIR/ios && pod install
+          cd ios && pod install
       - name: Fetch signing files
         script: |
           CERT_KEY=$(cat $CM_BUILD_DIR/ios/cert_key.pem)
