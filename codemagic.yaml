@@ -45,16 +45,13 @@ workflows:
           flutter precache --ios
           flutter pub get
           cd ios && pod install
-      - name: Generate certificate private key
+      - name: Generate certificate key and fetch signing files
         script: |
-          openssl req -nodes -newkey rsa:2048 -keyout /tmp/cert_key.pem -out /tmp/cert_key.csr \
-            -subj "/CN=iOS Distribution/O=Mobile Content/C=KR"
-      - name: Fetch signing files
-        script: |
+          openssl genrsa -out /tmp/cert_key.pem 2048
+          export CERTIFICATE_PRIVATE_KEY=$(cat /tmp/cert_key.pem)
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
-            --create \
-            --certificate-key /tmp/cert_key.pem
+            --create
       - name: Set up signing
         script: |
           keychain add-certificates
