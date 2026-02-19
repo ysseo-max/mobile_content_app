@@ -61,6 +61,11 @@ workflows:
       - name: Set up signing
         script: |
           keychain add-certificates
+          # Grant codesign access to keychain items
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" ~/Library/Keychains/codemagic.keychain || true
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" ~/Library/Keychains/codemagic.keychain-db || true
+          # List identities for debugging
+          security find-identity -v -p codesigning
           xcode-project use-profiles
       - name: Build IPA
         script: |
