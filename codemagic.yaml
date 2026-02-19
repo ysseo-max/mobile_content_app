@@ -42,6 +42,8 @@ workflows:
       - name: Get Flutter packages and install CocoaPods
         script: |
           flutter packages pub get
+          flutter precache --ios
+          flutter pub get
           cd ios && pod install
       - name: Fetch signing files
         script: |
