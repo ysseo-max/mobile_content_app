@@ -5,11 +5,13 @@ workflows:
     instance_type: mac_mini_m2
     environment:
       flutter: stable
-      groups:
-        - android_credentials
       vars:
         CM_KEY_ALIAS: upload
     scripts:
+      - name: Set up keystore
+        script: |
+          echo $CM_KEYSTORE | base64 --decode > $CM_BUILD_DIR/android/app/upload-keystore.jks
+          printf "storePassword=$CM_KEYSTORE_PASSWORD\nkeyPassword=$CM_KEY_PASSWORD\nkeyAlias=$CM_KEY_ALIAS\nstoreFile=app/upload-keystore.jks\n" > $CM_BUILD_DIR/android/key.properties
       - name: Get Flutter packages
         script: flutter packages pub get
       - name: Build APK
