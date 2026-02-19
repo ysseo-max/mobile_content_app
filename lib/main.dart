@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -14,18 +15,31 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Firebase 초기화
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    debugPrint('Firebase init failed: $e');
+  }
 
-  // 푸시 알림 초기화
-  await PushNotificationService.initialize();
-
-  // 푸시 토픽 구독 (전체 사용자)
-  await PushNotificationService.subscribeToTopic('all_users');
+  // 푸시 알림 초기화 (웹에서는 별도 처리)
+  try {
+    await PushNotificationService.initialize();
+    // 웹에서는 토픽 구독 미지원
+    if (!kIsWeb) {
+      await PushNotificationService.subscribeToTopic('all_users');
+    }
+  } catch (e) {
+    debugPrint('Push init failed: $e');
+  }
 
   // 익명 인증
-  await FirebaseService.signInAnonymously();
+  try {
+    await FirebaseService.signInAnonymously();
+  } catch (e) {
+    debugPrint('Auth failed: $e');
+  }
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
