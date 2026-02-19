@@ -39,10 +39,9 @@ workflows:
         XCODE_WORKSPACE: ios/Runner.xcworkspace
         XCODE_SCHEME: Runner
     scripts:
-      - name: Get Flutter packages
-        script: flutter packages pub get
-      - name: Install CocoaPods
+      - name: Get Flutter packages and install CocoaPods
         script: |
+          flutter packages pub get
           cd ios && pod install
       - name: Fetch signing files
         script: |
