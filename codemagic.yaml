@@ -76,8 +76,13 @@ workflows:
         script: |
           keychain add-certificates
           xcode-project use-profiles
-      - name: Build IPA
-        script: flutter build ipa --release --export-options-plist=/Users/builder/export_options.plist
+      - name: Flutter build without codesign
+        script: flutter build ios --release --no-codesign
+      - name: Build IPA with xcode-project
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
