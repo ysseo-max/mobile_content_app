@@ -11,9 +11,18 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 class PushNotificationService {
-  static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  static FirebaseMessaging? _messagingInstance;
   static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
+
+  static FirebaseMessaging? get _messaging {
+    try {
+      _messagingInstance ??= FirebaseMessaging.instance;
+      return _messagingInstance;
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// Android 알림 채널
   static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
@@ -25,49 +34,59 @@ class PushNotificationService {
 
   /// 초기화
   static Future<void> initialize() async {
-    // 백그라운드 핸들러 등록
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    try {
+      final messaging = _messaging;
+      if (messaging == null) {
+        debugPrint('PushNotificationService: Firebase not available');
+        return;
+      }
 
-    // 권한 요청
-    final settings = await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-      provisional: false,
-    );
+      // 백그라운드 핸들러 등록
+      FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
-    debugPrint('Push permission: ${settings.authorizationStatus}');
+      // 권한 요청
+      final settings = await messaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+        provisional: false,
+      );
 
-    // 로컬 알림 초기화
-    await _initLocalNotifications();
+      debugPrint('Push permission: ${settings.authorizationStatus}');
 
-    // Android 채널 생성
-    if (!kIsWeb && Platform.isAndroid) {
-      await _localNotifications
-          .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
-          ?.createNotificationChannel(_channel);
+      // 로컬 알림 초기화
+      await _initLocalNotifications();
+
+      // Android 채널 생성
+      if (!kIsWeb && Platform.isAndroid) {
+        await _localNotifications
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>()
+            ?.createNotificationChannel(_channel);
+      }
+
+      // 포그라운드 메시지 처리
+      FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+
+      // 앱이 백그라운드에서 열릴 때
+      FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
+
+      // 앱이 종료 상태에서 열릴 때
+      final initialMessage = await messaging.getInitialMessage();
+      if (initialMessage != null) {
+        _handleMessageOpenedApp(initialMessage);
+      }
+
+      // FCM 토큰 저장
+      await _saveToken();
+
+      // 토큰 갱신 리스너
+      messaging.onTokenRefresh.listen((token) {
+        _saveTokenToFirestore(token);
+      });
+    } catch (e) {
+      debugPrint('PushNotificationService.initialize: $e');
     }
-
-    // 포그라운드 메시지 처리
-    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-
-    // 앱이 백그라운드에서 열릴 때
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
-
-    // 앱이 종료 상태에서 열릴 때
-    final initialMessage = await _messaging.getInitialMessage();
-    if (initialMessage != null) {
-      _handleMessageOpenedApp(initialMessage);
-    }
-
-    // FCM 토큰 저장
-    await _saveToken();
-
-    // 토큰 갱신 리스너
-    _messaging.onTokenRefresh.listen((token) {
-      _saveTokenToFirestore(token);
-    });
   }
 
   /// 로컬 알림 초기화
@@ -123,12 +142,16 @@ class PushNotificationService {
   static void _handleMessageOpenedApp(RemoteMessage message) {
     final type = message.data['type'];
     debugPrint('Opened app from notification: $type');
-    // 필요시 여기서 특정 화면으로 네비게이션
   }
 
   /// FCM 토큰 가져오기
   static Future<String?> getToken() async {
-    return await _messaging.getToken();
+    try {
+      return await _messaging?.getToken();
+    } catch (e) {
+      debugPrint('PushNotificationService.getToken: $e');
+      return null;
+    }
   }
 
   /// FCM 토큰 저장
@@ -157,11 +180,19 @@ class PushNotificationService {
 
   /// 특정 토픽 구독
   static Future<void> subscribeToTopic(String topic) async {
-    await _messaging.subscribeToTopic(topic);
+    try {
+      await _messaging?.subscribeToTopic(topic);
+    } catch (e) {
+      debugPrint('PushNotificationService.subscribeToTopic: $e');
+    }
   }
 
   /// 토픽 구독 해제
   static Future<void> unsubscribeFromTopic(String topic) async {
-    await _messaging.unsubscribeFromTopic(topic);
+    try {
+      await _messaging?.unsubscribeFromTopic(topic);
+    } catch (e) {
+      debugPrint('PushNotificationService.unsubscribeFromTopic: $e');
+    }
   }
 }
