@@ -57,15 +57,21 @@ workflows:
           # Revoke existing distribution certificates (new key won't match old certs)
           echo "=== Revoking old certificates ==="
           app-store-connect certificates list --type DISTRIBUTION --json > /tmp/certs.json 2>/dev/null || echo "[]" > /tmp/certs.json
+          echo "Certificate JSON structure:"
+          cat /tmp/certs.json | python3 -m json.tool 2>/dev/null | head -40
           python3 -c "
           import json, subprocess
           try:
               certs = json.load(open('/tmp/certs.json'))
               for c in certs:
-                  sn = c.get('serialNumber','')
-                  print(f'Revoking: {sn}')
-                  subprocess.run(['app-store-connect','certificates','delete',sn], check=False)
-          except: pass
+                  print(f'Keys: {list(c.keys())}')
+                  # Try multiple possible ID fields
+                  cert_id = c.get('id') or c.get('serialNumber') or c.get('serial_number') or c.get('certificateId') or ''
+                  print(f'Revoking cert id: {cert_id}')
+                  if cert_id:
+                      subprocess.run(['app-store-connect','certificates','delete',str(cert_id)], check=False)
+          except Exception as e:
+              print(f'Error: {e}')
           "
           echo "=== Fetching signing files ==="
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
