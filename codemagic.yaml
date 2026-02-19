@@ -49,6 +49,14 @@ workflows:
         script: |
           openssl genrsa -out /tmp/cert_key.pem 2048
           export CERTIFICATE_PRIVATE_KEY=$(cat /tmp/cert_key.pem)
+          # Revoke existing distribution certificates (we don't have their private keys)
+          CERT_IDS=$(app-store-connect certificates list --type DISTRIBUTION --print-id 2>/dev/null || true)
+          if [ -n "$CERT_IDS" ]; then
+            echo "$CERT_IDS" | while read -r cid; do
+              echo "Revoking certificate: $cid"
+              app-store-connect certificates delete "$cid" 2>/dev/null || true
+            done
+          fi
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create
