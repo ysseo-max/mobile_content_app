@@ -86,7 +86,10 @@ workflows:
           security list-keychains
           security find-identity -v -p codesigning
       - name: Build iOS (no codesign)
-        script: flutter build ios --release --no-codesign
+        script: |
+          # Check Xcode version
+          xcodebuild -version
+          flutter build ios --release --no-codesign --verbose 2>&1 | tail -100
       - name: Archive and export IPA
         script: |
           xcode-project build-ipa \
