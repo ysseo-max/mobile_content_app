@@ -13,7 +13,7 @@ import 'services/analytics_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Firebase 초기화
+  // Firebase 초기화만 먼저 (필수)
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -22,17 +22,20 @@ void main() async {
     debugPrint('Firebase init failed: $e');
   }
 
-  // 푸시 알림 초기화 (웹에서는 별도 처리)
-  try {
-    await PushNotificationService.initialize();
-    // 웹에서는 토픽 구독 미지원
-    if (!kIsWeb) {
-      await PushNotificationService.subscribeToTopic('all_users');
-    }
-  } catch (e) {
-    debugPrint('Push init failed: $e');
-  }
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
+  // UI를 먼저 띄운 후 나머지 초기화 진행
+  runApp(const MobileContentApp());
+
+  // 푸시 알림, 인증 등은 UI 로드 후 비동기 실행
+  _initServices();
+}
+
+/// UI 로드 후 백그라운드에서 서비스 초기화
+Future<void> _initServices() async {
   // 익명 인증
   try {
     await FirebaseService.signInAnonymously();
@@ -40,12 +43,15 @@ void main() async {
     debugPrint('Auth failed: $e');
   }
 
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
-
-  runApp(const MobileContentApp());
+  // 푸시 알림 초기화
+  try {
+    await PushNotificationService.initialize();
+    if (!kIsWeb) {
+      await PushNotificationService.subscribeToTopic('all_users');
+    }
+  } catch (e) {
+    debugPrint('Push init failed: $e');
+  }
 }
 
 class MobileContentApp extends StatelessWidget {
