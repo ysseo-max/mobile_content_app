@@ -11,39 +11,42 @@ workflows:
       - name: Set up keystore
         script: |
           set -e
-          # Python decode: handles base64 padding/whitespace edge cases
-          python3 -c "
-import base64, os, sys
-raw = os.environ['CM_KEYSTORE']
-data = base64.b64decode(raw + '=' * (-len(raw) % 4))
-sys.stderr.write('Keystore: %d bytes, header=%s\n' % (len(data), data[:4].hex()))
-open('/tmp/ks_src.ks', 'wb').write(data)
-"
-          # Resolve keytool path (use JDK bundled with Android build environment)
+          # Decode base64 keystore with Python (reliable padding handling)
+          python3 << 'PYEOF'
+          import base64, os, sys
+          raw = os.environ['CM_KEYSTORE']
+          data = base64.b64decode(raw + '=' * (-len(raw) % 4))
+          sys.stderr.write('Keystore: %d bytes, header=%s\n' % (len(data), data[:4].hex()))
+          with open('/tmp/ks_src.ks', 'wb') as f:
+              f.write(data)
+          PYEOF
+
+          # Resolve keytool from JDK
           KEYTOOL="${JAVA_HOME}/bin/keytool"
           [ -x "$KEYTOOL" ] || KEYTOOL=$(which keytool)
-          echo "=== keytool: $KEYTOOL ==="
-          "$KEYTOOL" -version
+          echo "=== Using keytool: $KEYTOOL ==="
 
-          # Convert PKCS12 → JKS  (bundletool in AGP 8.x requires JKS format)
+          # Convert PKCS12 → JKS (bundletool in AGP 8.x requires JKS)
           "$KEYTOOL" -importkeystore \
             -srckeystore /tmp/ks_src.ks \
             -srcstoretype PKCS12 \
             -srcstorepass "$CM_KEYSTORE_PASSWORD" \
-            -destkeystore $CM_BUILD_DIR/android/app/upload-keystore.jks \
+            -destkeystore "$CM_BUILD_DIR/android/app/upload-keystore.jks" \
             -deststoretype JKS \
             -deststorepass "$CM_KEYSTORE_PASSWORD" \
             -destkeypass "$CM_KEY_PASSWORD" \
             -noprompt
 
-          # Verify output
+          # Verify JKS output
           echo "=== JKS keystore created ==="
-          ls -la $CM_BUILD_DIR/android/app/upload-keystore.jks
+          ls -la "$CM_BUILD_DIR/android/app/upload-keystore.jks"
           "$KEYTOOL" -list -storetype JKS \
-            -keystore $CM_BUILD_DIR/android/app/upload-keystore.jks \
+            -keystore "$CM_BUILD_DIR/android/app/upload-keystore.jks" \
             -storepass "$CM_KEYSTORE_PASSWORD" 2>&1 | head -8
 
-          printf "storePassword=$CM_KEYSTORE_PASSWORD\nkeyPassword=$CM_KEY_PASSWORD\nkeyAlias=$CM_KEY_ALIAS\nstoreFile=upload-keystore.jks\n" > $CM_BUILD_DIR/android/key.properties
+          printf "storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=upload-keystore.jks\n" \
+            "$CM_KEYSTORE_PASSWORD" "$CM_KEY_PASSWORD" "$CM_KEY_ALIAS" \
+            > "$CM_BUILD_DIR/android/key.properties"
       - name: Get Flutter packages
         script: flutter packages pub get
       - name: Build AAB
@@ -82,29 +85,23 @@ open('/tmp/ks_src.ks', 'wb').write(data)
           set -e
           openssl genrsa -out /tmp/cert_key.pem 2048
           export CERTIFICATE_PRIVATE_KEY=$(cat /tmp/cert_key.pem)
-          # Persist CERTIFICATE_PRIVATE_KEY for subsequent steps
           echo "CERTIFICATE_PRIVATE_KEY<<CERTEOF" >> $CM_ENV
           cat /tmp/cert_key.pem >> $CM_ENV
           echo "CERTEOF" >> $CM_ENV
-          # Revoke existing distribution certificates (new key won't match old certs)
           echo "=== Revoking old certificates ==="
           app-store-connect certificates list --type DISTRIBUTION --json > /tmp/certs.json 2>/dev/null || echo "[]" > /tmp/certs.json
-          echo "Certificate JSON structure:"
-          cat /tmp/certs.json | python3 -m json.tool 2>/dev/null | head -40
-          python3 -c "
+          python3 << 'PYEOF'
           import json, subprocess
           try:
               certs = json.load(open('/tmp/certs.json'))
               for c in certs:
-                  print(f'Keys: {list(c.keys())}')
-                  # Try multiple possible ID fields
-                  cert_id = c.get('id') or c.get('serialNumber') or c.get('serial_number') or c.get('certificateId') or ''
-                  print(f'Revoking cert id: {cert_id}')
+                  cert_id = c.get('id') or c.get('serialNumber') or c.get('certificateId') or ''
                   if cert_id:
+                      print(f'Revoking cert: {cert_id}')
                       subprocess.run(['app-store-connect','certificates','delete',str(cert_id)], check=False)
           except Exception as e:
-              print(f'Error: {e}')
-          "
+              print(f'Cert revocation error: {e}')
+          PYEOF
           echo "=== Fetching signing files ==="
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
@@ -114,12 +111,10 @@ open('/tmp/ks_src.ks', 'wb').write(data)
           keychain initialize
           keychain add-certificates
           xcode-project use-profiles
-          # Debug: show keychain and identities
           security list-keychains
           security find-identity -v -p codesigning
       - name: Build iOS (no codesign)
         script: |
-          # Check Xcode version
           xcodebuild -version
           flutter build ios --release --no-codesign --verbose 2>&1 | tail -100
       - name: Archive and export IPA
