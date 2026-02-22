@@ -10,8 +10,21 @@ workflows:
     scripts:
       - name: Set up keystore
         script: |
-          echo $CM_KEYSTORE | base64 --decode > $CM_BUILD_DIR/android/app/upload-keystore.jks
-          printf "storePassword=$CM_KEYSTORE_PASSWORD\nkeyPassword=$CM_KEY_PASSWORD\nkeyAlias=$CM_KEY_ALIAS\nstoreFile=upload-keystore.jks\nstoreType=PKCS12\n" > $CM_BUILD_DIR/android/key.properties
+          # Decode base64 keystore to temp file
+          echo $CM_KEYSTORE | base64 --decode > /tmp/keystore_src.ks
+          # Convert PKCS12 → JKS (JDK 9+ generates PKCS12 by default; bundletool requires JKS)
+          keytool -importkeystore \
+            -srckeystore /tmp/keystore_src.ks \
+            -srcstoretype PKCS12 \
+            -srcstorepass "$CM_KEYSTORE_PASSWORD" \
+            -srckeypass "$CM_KEY_PASSWORD" \
+            -destkeystore $CM_BUILD_DIR/android/app/upload-keystore.jks \
+            -deststoretype JKS \
+            -deststorepass "$CM_KEYSTORE_PASSWORD" \
+            -destkeypass "$CM_KEY_PASSWORD" \
+            -alias "$CM_KEY_ALIAS" \
+            -noprompt
+          printf "storePassword=$CM_KEYSTORE_PASSWORD\nkeyPassword=$CM_KEY_PASSWORD\nkeyAlias=$CM_KEY_ALIAS\nstoreFile=upload-keystore.jks\n" > $CM_BUILD_DIR/android/key.properties
       - name: Get Flutter packages
         script: flutter packages pub get
       - name: Build AAB
