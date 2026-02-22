@@ -5,12 +5,19 @@ workflows:
     instance_type: mac_mini_m2
     environment:
       flutter: stable
+      groups:
+        - android_keystore
       vars:
         CM_KEY_ALIAS: upload
     scripts:
       - name: Set up keystore
         script: |
           set -e
+          # Verify required env vars are set
+          if [ -z "$CM_KEYSTORE" ]; then
+            echo "ERROR: CM_KEYSTORE is not set. Add it to the 'android_keystore' environment variable group in Codemagic."
+            exit 1
+          fi
           # Decode base64 keystore with Python (reliable padding handling)
           python3 << 'PYEOF'
           import base64, os, sys
