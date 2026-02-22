@@ -464,6 +464,124 @@ class AppLocalizations {
       'ja': '分',
       'zh': '分钟',
     },
+
+    // ===================== CONSENT =====================
+    'consentTitle': {
+      'ko': '개인정보 수집 및 제3자 제공 동의',
+      'en': 'Privacy Consent',
+      'ja': '個人情報の収集・第三者提供への同意',
+      'zh': '个人信息收集及第三方提供同意',
+    },
+    'consentIntro': {
+      'ko': 'AI 이미지 합성 서비스를 이용하려면 아래 개인정보 처리에 동의해 주세요.',
+      'en': 'To use the AI image service, please agree to the following data processing.',
+      'ja': 'AI画像合成サービスを利用するには、以下の個人情報処理にご同意ください。',
+      'zh': '要使用AI图像合成服务，请同意以下个人信息处理。',
+    },
+    'consentCollectedData': {
+      'ko': '수집 항목',
+      'en': 'Data Collected',
+      'ja': '収集項目',
+      'zh': '收集项目',
+    },
+    'consentCollectedDataValue': {
+      'ko': '얼굴 사진 (업로드한 이미지)',
+      'en': 'Face photo (uploaded image)',
+      'ja': '顔写真（アップロード画像）',
+      'zh': '面部照片（上传的图像）',
+    },
+    'consentRecipient': {
+      'ko': '제3자 제공 대상',
+      'en': 'Third-party recipient',
+      'ja': '第三者提供先',
+      'zh': '第三方接收方',
+    },
+    'consentRecipientValue': {
+      'ko': 'Google LLC (Gemini AI)',
+      'en': 'Google LLC (Gemini AI)',
+      'ja': 'Google LLC（Gemini AI）',
+      'zh': 'Google LLC（Gemini AI）',
+    },
+    'consentPurpose': {
+      'ko': '이용 목적',
+      'en': 'Purpose',
+      'ja': '利用目的',
+      'zh': '使用目的',
+    },
+    'consentPurposeValue': {
+      'ko': 'AI 이미지 합성 및 생성',
+      'en': 'AI image synthesis and generation',
+      'ja': 'AI画像合成・生成',
+      'zh': 'AI图像合成与生成',
+    },
+    'consentRetention': {
+      'ko': '보유 기간',
+      'en': 'Retention period',
+      'ja': '保有期間',
+      'zh': '保留期限',
+    },
+    'consentRetentionValue': {
+      'ko': '처리 후 즉시 삭제 (Google 정책에 따름)',
+      'en': 'Deleted immediately after processing (per Google policy)',
+      'ja': '処理後即時削除（Googleポリシーに準拠）',
+      'zh': '处理后立即删除（遵循Google政策）',
+    },
+    'consentAgree': {
+      'ko': '동의합니다',
+      'en': 'I Agree',
+      'ja': '同意します',
+      'zh': '我同意',
+    },
+    'consentDecline': {
+      'ko': '거부합니다',
+      'en': 'I Decline',
+      'ja': '拒否します',
+      'zh': '我拒绝',
+    },
+    'consentPrivacyPolicy': {
+      'ko': '개인정보처리방침 보기',
+      'en': 'View Privacy Policy',
+      'ja': 'プライバシーポリシーを見る',
+      'zh': '查看隐私政策',
+    },
+    'consentDeclinedNotice': {
+      'ko': '동의가 필요합니다\n\nAI 이미지 체험을 이용하려면 개인정보 수집·제3자 제공에 동의하셔야 합니다.',
+      'en': 'Consent required\n\nYou must agree to the data collection and sharing to use the AI image experience.',
+      'ja': '同意が必要です\n\nAI画像体験を利用するには、個人情報の収集・提供に同意する必要があります。',
+      'zh': '需要同意\n\n使用AI图像体验须同意个人信息的收集和共享。',
+    },
+
+    // ===================== SETTINGS =====================
+    'settings': {
+      'ko': '설정',
+      'en': 'Settings',
+      'ja': '設定',
+      'zh': '设置',
+    },
+    'settingsAiConsent': {
+      'ko': 'AI 데이터 수집 동의',
+      'en': 'AI Data Collection Consent',
+      'ja': 'AIデータ収集への同意',
+      'zh': 'AI数据收集同意',
+    },
+    'settingsAiConsentDesc': {
+      'ko': '얼굴 사진을 Google Gemini AI에 전송하는 것에 동의합니다.',
+      'en': 'Agree to send face photo to Google Gemini AI.',
+      'ja': '顔写真をGoogle Gemini AIに送信することに同意します。',
+      'zh': '同意将面部照片发送至Google Gemini AI。',
+    },
+    'settingsConsentRevokeWarning': {
+      'ko': '동의를 철회하면 AI 분석 및 사진 수정 기능을 사용할 수 없습니다.',
+      'en': 'Revoking consent disables the AI analysis and photo editing features.',
+      'ja': '同意を取り消すと、AI分析・写真編集機能が使用できなくなります。',
+      'zh': '撤回同意后将无法使用AI分析和照片编辑功能。',
+    },
+    'settingsPrivacyPolicy': {
+      'ko': '개인정보처리방침',
+      'en': 'Privacy Policy',
+      'ja': 'プライバシーポリシー',
+      'zh': '隐私政策',
+    },
   };
 
   String tr(String key) {

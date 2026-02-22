@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/experience_state.dart';
 import 'ai_experience/ai_experience_screen.dart';
+import 'settings_screen.dart';
 import 'stamp_rally/stamp_rally_screen.dart';
 
 class MainShell extends StatelessWidget {
@@ -70,6 +71,18 @@ class MainShell extends StatelessWidget {
                     ],
                     onTap: () => state.setTab(1),
                   ),
+                ),
+                const SizedBox(width: 4),
+                // Settings button
+                IconButton(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const SettingsScreen()),
+                  ),
+                  icon: const Icon(Icons.settings_outlined),
+                  color: Colors.grey.shade500,
+                  tooltip: l10n.tr('settings'),
                 ),
               ],
             ),
