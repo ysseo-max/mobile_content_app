@@ -40,6 +40,8 @@ android {
 
     signingConfigs {
         create("release") {
+            // PKCS12 is the default format for keystores created with JDK 9+
+            storeType = "PKCS12"
             if (System.getenv("CM_KEYSTORE_PATH") != null) {
                 // Codemagic CI environment
                 storeFile = file(System.getenv("CM_KEYSTORE_PATH"))
