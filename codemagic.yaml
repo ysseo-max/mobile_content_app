@@ -10,7 +10,39 @@ workflows:
     scripts:
       - name: Set up keystore
         script: |
-          echo $CM_KEYSTORE | base64 --decode > $CM_BUILD_DIR/android/app/upload-keystore.jks
+          set -e
+          # Python decode: handles base64 padding/whitespace edge cases
+          python3 -c "
+import base64, os, sys
+raw = os.environ['CM_KEYSTORE']
+data = base64.b64decode(raw + '=' * (-len(raw) % 4))
+sys.stderr.write('Keystore: %d bytes, header=%s\n' % (len(data), data[:4].hex()))
+open('/tmp/ks_src.ks', 'wb').write(data)
+"
+          # Resolve keytool path (use JDK bundled with Android build environment)
+          KEYTOOL="${JAVA_HOME}/bin/keytool"
+          [ -x "$KEYTOOL" ] || KEYTOOL=$(which keytool)
+          echo "=== keytool: $KEYTOOL ==="
+          "$KEYTOOL" -version
+
+          # Convert PKCS12 → JKS  (bundletool in AGP 8.x requires JKS format)
+          "$KEYTOOL" -importkeystore \
+            -srckeystore /tmp/ks_src.ks \
+            -srcstoretype PKCS12 \
+            -srcstorepass "$CM_KEYSTORE_PASSWORD" \
+            -destkeystore $CM_BUILD_DIR/android/app/upload-keystore.jks \
+            -deststoretype JKS \
+            -deststorepass "$CM_KEYSTORE_PASSWORD" \
+            -destkeypass "$CM_KEY_PASSWORD" \
+            -noprompt
+
+          # Verify output
+          echo "=== JKS keystore created ==="
+          ls -la $CM_BUILD_DIR/android/app/upload-keystore.jks
+          "$KEYTOOL" -list -storetype JKS \
+            -keystore $CM_BUILD_DIR/android/app/upload-keystore.jks \
+            -storepass "$CM_KEYSTORE_PASSWORD" 2>&1 | head -8
+
           printf "storePassword=$CM_KEYSTORE_PASSWORD\nkeyPassword=$CM_KEY_PASSWORD\nkeyAlias=$CM_KEY_ALIAS\nstoreFile=upload-keystore.jks\n" > $CM_BUILD_DIR/android/key.properties
       - name: Get Flutter packages
         script: flutter packages pub get
