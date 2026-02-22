@@ -52,6 +52,8 @@ android {
                 storePassword = keystoreProperties["storePassword"] as String
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String
+                val ksType = keystoreProperties["storeType"] as? String
+                if (ksType != null) storeType = ksType
             }
         }
     }
